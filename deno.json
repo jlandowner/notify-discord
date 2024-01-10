@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "build": "deno compile --allow-env --allow-write --allow-read --allow-net index.ts",
+    "build-all": "deno task build-linux; deno task build-windows; deno task build-darwin-intel; deno task build-darwin",
+    "build-linux": "TARGET=x86_64-unknown-linux-gnu && mkdir -p dist/$TARGET && deno compile --target $TARGET -o dist/$TARGET/notify-discord --allow-env --allow-write --allow-read --allow-net index.ts && cd dist/$TARGET && tar -cf notify-discord-$TARGET.tgz notify-discord && mv notify-discord-$TARGET.tgz ..",
+    "build-windows": "TARGET=x86_64-pc-windows-msvc && mkdir -p dist/$TARGET && deno compile --target $TARGET -o dist/$TARGET/notify-discord.exe --allow-env --allow-write --allow-read --allow-net index.ts && cd dist/$TARGET && tar -cf notify-discord-$TARGET.tgz notify-discord.exe && mv notify-discord-$TARGET.tgz ..",
+    "build-darwin-intel": "TARGET=x86_64-apple-darwin && mkdir -p dist/$TARGET && deno compile --target $TARGET -o dist/$TARGET/notify-discord --allow-env --allow-write --allow-read --allow-net index.ts && cd dist/$TARGET && tar -cf notify-discord-$TARGET.tgz notify-discord && mv notify-discord-$TARGET.tgz ..",
+    "build-darwin": "TARGET=aarch64-apple-darwin && mkdir -p dist/$TARGET && deno compile --target $TARGET -o dist/$TARGET/notify-discord --allow-env --allow-write --allow-read --allow-net index.ts && cd dist/$TARGET && tar -cf notify-discord-$TARGET.tgz notify-discord && mv notify-discord-$TARGET.tgz .."
+  }
+}
