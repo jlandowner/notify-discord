@@ -2,10 +2,11 @@ import { parseArgs } from "https://deno.land/std@0.211.0/cli/parse_args.ts";
 import * as log from "https://deno.land/std@0.211.0/log/mod.ts";
 import { version } from "./version.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { boolean } from "https://deno.land/x/zod@v3.22.4/types.ts";
 
-const versionMessage = `notify-discord - ${version} jlandowner 2024`;
+const VERSION_MESSAGE = `notify-discord - ${version} jlandowner 2024`;
 
-const helpMessage = `notify-discord - post webhook to discord webhook URL
+const HELP_MESSAGE = `notify-discord - post webhook to discord webhook URL
 
 Usage:
   Initialize:
@@ -58,16 +59,15 @@ const args = argsSchema.parse(
   parseArgs(Deno.args, { boolean: ["init", "debug", "help", "version"] }),
 );
 
-const versionExit = () => {
-  console.log(versionMessage);
+args.version && (() => {
+  console.log(VERSION_MESSAGE);
   Deno.exit(0);
-};
-args.version && versionExit();
+})();
 
-const helpExit = (exitCode: number) => {
-  console.log(helpMessage);
+function helpExit(exitCode: number) {
+  console.log(HELP_MESSAGE);
   Deno.exit(exitCode);
-};
+}
 args.help && helpExit(0);
 
 log.setup({
@@ -88,23 +88,26 @@ log.setup({
 });
 log.debug(`args: ${JSON.stringify(args)}`);
 
-const errExit = (msg: string, help?: boolean) => {
+interface ErrExitOption {
+  showHelp?: boolean;
+  exitCode?: number;
+}
+function errExit(msg: string, options: ErrExitOption = {}) {
   log.error(msg);
-  help && helpExit(1);
-  Deno.exit(1);
-};
+  options.showHelp && helpExit(options.exitCode || 1);
+}
 
-const configFile = args.config
+const configFilePath = args.config
   ? new URL(args.config, import.meta.url)
   : new URL(
     ".notify-discord.json",
     `file://${Deno.env.get("HOME")}/`,
   );
 
-const initialize = async () => {
-  args["webhook-url"] || errExit("webhook-url is not set", true);
+args.init && await (async () => {
+  args["webhook-url"] || errExit("webhook-url is not set", { showHelp: true });
   await Deno.writeTextFileSync(
-    configFile,
+    configFilePath,
     JSON.stringify(
       {
         "webhook-url": args["webhook-url"],
@@ -113,82 +116,80 @@ const initialize = async () => {
       "    ",
     ),
   );
-  log.info(`Successfully initirized, saved in ${configFile}`);
+  log.info(`Successfully initirized, saved in ${configFilePath}`);
   Deno.exit(0);
-};
-args.init && await initialize();
+})();
 
-let webhookURL: string;
-try {
-  const loadConfig = async (): Promise<string> => {
-    const cfg = JSON.parse(await Deno.readTextFileSync(configFile));
-    return cfg["webhook-url"];
-  };
-  webhookURL = `${args["webhook-url"] || await loadConfig()}?wait=true`;
-} catch (e) {
-  errExit(`Not initialized: ${e}`);
+function getwebhookUrlFromConfigFile(): string {
+  const cfg = JSON.parse(Deno.readTextFileSync(configFilePath));
+  return cfg["webhook-url"];
 }
 
-const execDiscordWebhook = async (content: string) => {
-  if (args["code-block"] !== undefined) {
-    content = `\`\`\`${args["code-block"]}\n${content}\n\`\`\``;
-  }
+async function execDiscordWebhook(content: string) {
+  try {
+    const webhookUrl = `${
+      args["webhook-url"] || await getwebhookUrlFromConfigFile()
+    }?wait=true`;
 
-  const formData = new FormData();
-  formData.append("content", content);
+    if (args["code-block"] !== undefined) {
+      content = `\`\`\`${args["code-block"]}\n${content}\n\`\`\``;
+    }
 
-  log.debug(`url: ${webhookURL}`);
-  log.debug(`content: ${content}`);
+    const formData = new FormData();
+    formData.append("content", content);
 
-  const res = await fetch(webhookURL, {
-    method: "POST",
-    body: formData,
-  });
+    log.debug(`url: ${webhookUrl}`);
+    log.debug(`content: ${content}`);
 
-  log.debug(`response status: ${res.status} ${res.statusText}`);
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      body: formData,
+    });
 
-  log.debug(
-    `response headers: ${
-      JSON.stringify(Object.fromEntries(res.headers.entries()))
-    }`,
-  );
-
-  const resBody = await res.json();
-  log.debug(`response body: ${resBody}`);
-
-  res.ok ||
-    errExit(
-      `notify failed: status=${res.status} ${res.statusText} message=${
-        JSON.stringify(resBody)
+    log.debug(`response status: ${res.status} ${res.statusText}`);
+    log.debug(
+      `response headers: ${
+        JSON.stringify(Object.fromEntries(res.headers.entries()))
       }`,
     );
 
-  switch (args.output) {
-    case "json":
-      console.log(JSON.stringify(resBody, null, "  "));
-      break;
-    case "text":
-      log.info(`notify done: ${res.statusText}`);
-      break;
-    default:
-      log.warning(`output is not supported: ${args.output}`);
-      log.info(`notify done: ${res.statusText}`);
-      break;
+    const resBody = await res.json();
+    log.debug(`response body: ${resBody}`);
+
+    res.ok ||
+      errExit(
+        `notify failed: status=${res.status} ${res.statusText} message=${
+          JSON.stringify(resBody)
+        }`,
+      );
+
+    switch (args.output) {
+      case "json":
+        console.log(JSON.stringify(resBody, null, "  "));
+        break;
+      case "text":
+        log.info(`notify done: ${res.statusText}`);
+        break;
+      default:
+        log.warning(`output is not supported: ${args.output}`);
+        log.info(`notify done: ${res.statusText}`);
+        break;
+    }
+  } catch (e) {
+    log.error(`failed to exec webhook: ${e.message}`);
   }
-};
+}
 
 if (!Deno.isatty(Deno.stdin.rid)) {
-  // content from stdin
   const contentStream = Deno.stdin.readable.pipeThrough(
     new TextDecoderStream(),
   );
+
   for await (const line of contentStream) {
     execDiscordWebhook(line);
   }
 } else if (args._.length > 0) {
-  // content from args
   execDiscordWebhook(args._.join(" "));
 } else {
-  log.error("no input from stdin or arguement");
-  helpExit(1);
+  errExit("no input from stdin or arguement", { showHelp: true });
 }
