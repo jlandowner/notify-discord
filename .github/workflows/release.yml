@@ -1,0 +1,61 @@
+name: Release 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      semver:
+        type: string
+        required: true
+        description: 'Semver for release. (e.g. 0.0.1) Not prefix v!'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+      
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Try to update inline versions
+        run: |
+          deno task update-version ${SEMVER}
+        env:
+          SEMVER: ${{ github.event.inputs.semver }}
+
+      - name: Check Diff
+        id: diff
+        run: |
+          git add -N .
+          git diff --name-only --exit-code
+        continue-on-error: true
+
+      - name: Commit & Push
+        if: steps.diff.outcome == 'failure'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .
+          git commit --author=. -m 'Auto Update by Release Action'
+          git push
+
+      - name: Create tag
+        run: |
+          git tag ${GIT_TAG}
+          git push origin ${GIT_TAG}
+        env:
+          GIT_TAG: v${{ github.event.inputs.semver }}
+      
+      - name: Build deno
+        run: |
+          deno task build-all
+      
+      - name: Create Release
+        run: |
+          gh create release ${GIT_TAG} --generate-notes --draft
+        env:
+          GIT_TAG: v${{ github.event.inputs.semver }}
