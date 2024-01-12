@@ -33,52 +33,64 @@ Usage:
   echo <message> | notify-discord
 
 Options:
+  --file <UPLOAD_FILE_PATH>    : Upload file
+  --as-file                    : Input as file. default file name is "notify-discord.txt" and you can change it by --file flag (default: false)
   --code-block <LANGUAGE>      : Enclose markdown code block with language (default: disabled)
   --save-config                : Save config options in a config file
+  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL
+  --username    <USERNAME>     : Override Discord's webhook username (default: configured in Discord webhook setting page)
+  --avatar-url  <AVATER_URL>   : Override Discord's webhook avator icon URL (default: configured in Discord webhook setting page)
   --config <CONFIG_FILE_PATH>  : Config file path (defualt: $HOME/.notify-discord.json)
   --debug                      : Debug mode (default: false)
   --help                       : Show help
   --version                    : Show version
 
-Config options:
-  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL
-  --output      [text, json]   : Output format (default: text)
-  --username    <USERNAME>     : Override Discord's webhook username (default: configured in Discord webhook setting page)
-  --avatar-url  <AVATER_URL>   : Override Discord's webhook avator icon URL (default: configured in Discord webhook setting page)
-
 Configuration file:
-  You can save the config options in a config file to change the default behavior.
-    notify-discord --save-config --output json --username GitHub --avatar-url https://github.com/github.png
-  
-  When the config options are found in args and file, args values are used.
+  You can save some options in a config file to change the default behavior.
+    notify-discord --save-config --username GitHub --avatar-url https://github.com/github.png
 
-  NOTE:
+  Config file schema:
+  {
+    "webhook-url": "Discord's webhook URL (Attention: see NOTES)",
+    "username":    "Override Discord's webhook username (default: configured in Discord webhook setting page)",
+    "avatar-url":  "Override Discord's webhook avator icon URL (default: configured in Discord webhook setting page)",
+  }
+  
+  When the options are found in both args and file, args values are always used.
+
+  NOTES:
     When you installed this command by "deno install" or "deno compile" with args of config options,
-    the options specified at install or compile time are ALWAYS used even if you pass no options in execution time.
-    If so, you can override the option by args but values in config file are never used.
+    the options specified at install or compile time by args are ALWAYS used even if you pass no options at execution time.
+    If so, you can override the option by args at execution time but config file values are never used.
 
 Example:
   1. post plain text message
       echo "Finished something" | notify-discord
 
-  2. post json data as a json code block
-      cat something.json | notify-discord --code-block json
+  2. post text message and upload some file
+      date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
 
-  3. post log as a plain code block
-      cat something.log | notify-discord --code-block ""
+  3. post a command output as file named "long-run.log"
+      (for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file --file "long-run.log"
+
+  4. post json data as a json code block
+      cat deno.json | notify-discord --code-block json
+
+  5. post log as a plain code block
+      tail /var/log/messages 2>&1 | notify-discord --code-block ""
 ```
 
-# Install option
+# Installation options
 
 ## 1. For deno-installed environment
 
 ```sh
-deno install --allow-env --allow-read --allow-write --allow-net --force \
-  https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
+deno install --allow-env --allow-read --allow-write --allow-net --force https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
   -- --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
 > NOTE: You can pass the default options to `deno install` args next to `--`.
+> Once you pass them at install time, the options are used by default.
 >
 > e.g.
 >
@@ -86,7 +98,7 @@ deno install --allow-env --allow-read --allow-write --allow-net --force \
 > - --config <YOUR_CONFIG_PATH> : change default config file path (default:
   > $HOME/.notify-discord.json)
 
-## 2. For non deno-installed environment
+## 2. For non-deno environment
 
 ### 2-1. Use pre-built binary with configuration file
 
@@ -120,19 +132,19 @@ deno compile --output notify-discord --allow-env --allow-read --allow-write --al
 Then, a binary file named `notify-discord` is created and place it in your PATH.
 
 > NOTE: You can pass the default options at the end of `deno compile` args. See
-> `deno install`.
+> `deno install` (But DO NOT set `--`).
 
 # Support status of Discord Webhook API parameters
 
 https://discord.com/developers/docs/resources/webhook#execute-webhook
 
 - `content`
+- `file[n]` and `attachments` for uploading a file
 - `username` and `avatar_url` overrides
 
-TODO:
+Not supported, currently:
 
 - `embed`
-- `attachments`
 
 # LICENSE
 

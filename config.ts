@@ -6,13 +6,11 @@ export const DEFAULT_FILE_URL = new URL(
 );
 
 interface Config {
-  output?: "text" | "json" | undefined;
   "webhook-url"?: string | undefined;
   username?: string | undefined;
   "avatar-url"?: string | undefined;
 }
 export const schema = z.object({
-  output: z.enum(["text", "json"]).optional(),
   "webhook-url": z.string().url().optional(),
   username: z.string().optional(),
   "avatar-url": z.string().url().optional(),
@@ -41,12 +39,6 @@ interface MergeOptions {
 export function merge(options: MergeOptions): Config {
   return schema.parse(
     {
-      output: pickConfigValue({
-        name: "output",
-        argValue: options.args.output,
-        fileValue: options.file.output,
-        default: "text",
-      }),
       "webhook-url": pickConfigValue({
         name: "webhook-url",
         argValue: options.args["webhook-url"],
