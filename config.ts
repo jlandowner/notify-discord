@@ -66,7 +66,7 @@ export function loadFromFile(fileURL: URL): Config {
     log.debug(`config file content: ${content}`);
     return schema.parse(JSON.parse(content));
   } catch (e) {
-    log.debug(`failed to load config file: ${e.message}`);
+    log.debug(`failed to load config file ${fileURL}: ${e.message}`);
     return {};
   }
 }
