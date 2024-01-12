@@ -93,7 +93,8 @@ deno compile --output notify-discord --allow-env --allow-read --allow-write --al
   --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
-Then, a binary file named `notify-discord` is created and place it in your PATH.
+Then, a binary file named `notify-discord` is created and place it in your
+executable `PATH`.
 
 > NOTE: You can pass the default options at the end of `deno compile` args. See
 > Once you pass them at install time, the options are embeded and
@@ -114,7 +115,7 @@ Download pre-built binary and configure.
 TARGET=x86_64-unknown-linux-gnu # You can choose "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin"
 
 # Download pre-built binary
-curl -sLO https://github.com/jlandowner/notify-discord/releases/latest/download/notify-discord-$TARGET.tgz && tar -xf notify-discord-$TARGET.gz && rm notify-discord-$TARGET.gz
+curl -sLO https://github.com/jlandowner/notify-discord/releases/latest/download/notify-discord-$TARGET.tgz && tar -xf notify-discord-$TARGET.tgz && rm notify-discord-$TARGET.tgz
 
 # Move binary file to executable PATH (e.g. $HOME/bin)
 mv notify-discord $HOME/bin/
