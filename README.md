@@ -4,7 +4,8 @@ A CLI command to post messages to Discord channels created by Deno.
 
 # Quickstart
 
-1. Generate your webhook URL in Discord channel settings page.
+1. Generate your webhook URL in Discord channel settings page. Only support text
+   channel.
    https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 
 2. Install with `deno install`
@@ -77,8 +78,13 @@ deno install --allow-env --allow-read --allow-write --allow-net --force \
   -- --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
-> NOTE: You can pass the config options to `deno install` args next to `--`. See
-> [Usage](#usage) about the config options.
+> NOTE: You can pass the default options to `deno install` args next to `--`.
+>
+> e.g.
+>
+> - --webhook-url <YOUR_WEBHOOK_URL> : configure webhook url embeded
+> - --config <YOUR_CONFIG_PATH> : change default config file path (default:
+  > $HOME/.notify-discord.json)
 
 ## 2. For non deno-installed environment
 
@@ -113,8 +119,8 @@ deno compile --output notify-discord --allow-env --allow-read --allow-write --al
 
 Then, a binary file named `notify-discord` is created and place it in your PATH.
 
-> NOTE: You can pass the config options at the end of `deno compile` args. See
-> [Usage](#usage) about the config options.
+> NOTE: You can pass the default options at the end of `deno compile` args. See
+> `deno install`.
 
 # Support status of Discord Webhook API parameters
 
