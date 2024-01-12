@@ -112,6 +112,21 @@ date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
 
 <img width="315" alt="s4" src="https://github.com/jlandowner/notify-discord/assets/48989258/4287f8af-24d9-4dc8-813a-4ec6f9c3c2fd">
 
+### override username and avatar url
+
+```sh
+echo This is Macbook 💻 | notify-discord --username Macbook --avatar-url https://github.com/apple.png
+```
+
+<img width="269" alt="s5" src="https://github.com/jlandowner/notify-discord/assets/48989258/6aab7e17-f041-435c-85dd-e6fff7866d9f">
+
+> You can store the options as the default behabior.
+> 
+> ```sh
+> notify-discord --save-config --username Macbook --avatar-url https://github.com/apple.png
+> echo This is Macbook 💻 | notify-discord
+> ```
+
 # Installation options
 
 ## For non-deno environment
