@@ -77,7 +77,7 @@ Example:
       date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
 
   3. post a command output as file named "long-run.log"
-      (for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file --file "long-run.log"
+      (for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file
 
   4. post json data as a json code block
       cat deno.json | notify-discord --code-block json
@@ -104,10 +104,10 @@ date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
 
 <img width="370" alt="s3" src="https://github.com/jlandowner/notify-discord/assets/48989258/0be47abb-dfd0-446c-b424-97e51e69b0e8">
 
-### post a command output as file named "long-run.log"
+### post a command output as file
 
 ```sh
-(for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file --file "long-run.log"
+(for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file
 ```
 
 <img width="315" alt="s4" src="https://github.com/jlandowner/notify-discord/assets/48989258/4287f8af-24d9-4dc8-813a-4ec6f9c3c2fd">
