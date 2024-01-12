@@ -1,48 +1,57 @@
-import { parseArgs } from "https://deno.land/std@0.211.0/cli/parse_args.ts";
-import * as log from "https://deno.land/std@0.211.0/log/mod.ts";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { log, parseArgs, z } from "./deps.ts";
+import * as cfg from "./config.ts";
 import { version } from "./version.ts";
+import { iso8601 } from "./iso8601.ts";
 
 const VERSION_MESSAGE = `notify-discord - ${version} jlandowner 2024`;
 
-const HELP_MESSAGE = `notify-discord - post webhook to discord webhook URL
+const HELP_MESSAGE =
+  `notify-discord - post messages to Discord channel by webhook
 
 Usage:
-  Notify message from args:
-    ./notify-discord <message>
-  Notify message from stdin:
-    echo <message> | ./notify-discord
+  notify-discord <message>
+  echo <message> | notify-discord
 
 Options:
-  --output [text, json]        : Output format (default: text)
   --code-block <LANGUAGE>      : Enclose markdown code block with language (default: disabled)
-  --save-config                : store webhook configurations in file. If you build your custom binary with built-in URL, this does not work.
-  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL (default: use built-in URL if exist or use stored url in config)
-  --config <CONFIG_FILE_PATH>  : Config file path. If you build your custom binary with built-in URL, this does not work. (defualt: $HOME/.notify-discord.json)
+  --save-config                : Save config options in a config file
+  --config <CONFIG_FILE_PATH>  : Config file path (defualt: $HOME/.notify-discord.json)
   --debug                      : Debug mode (default: false)
   --help                       : Show help
   --version                    : Show version
 
+Config options:
+  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL
+  --output      [text, json]   : Output format (default: text)
+  --username    <USERNAME>     : Override Discord's webhook username (default: configured in Discord webhook setting page)
+  --avatar-url  <AVATER_URL>   : Override Discord's webhook avator icon URL (default: configured in Discord webhook setting page)
+
+Configuration file:
+  You can save the config options in a config file to change the default behavior.
+    notify-discord --save-config --output json --username GitHub --avatar-url https://github.com/github.png
+  
+  When the config options are found in args and file, args values are used.
+
+  NOTE:
+    When you installed this command by "deno install" or "deno compile" with args of config options,
+    the options specified at install or compile time are ALWAYS used even if you pass no options in execution time.
+    If so, you can override the option by args but values in config file are never used.
+
 Example:
   1. post plain text message
-      ./notify-discord "Finished something"
+      echo "Finished something" | notify-discord
 
-  2. post plain text message with debug (set "--" between options and args)
-      ./notify-discord --debug -- "Finished something"
+  2. post json data as a json code block
+      cat something.json | notify-discord --code-block json
 
-  3. post json data
-      cat something.json | ./notify-discord --code-block json
-
-  4. post log with code block
-      cat something.log | ./notify-discord --code-block ""
+  3. post log as a plain code block
+      cat something.log | notify-discord --code-block ""
 `;
 
 const argsSchema = z.object({
   _: z.array(z.string()),
-  output: z.enum(["text", "json"]).default("text"),
   "code-block": z.string().optional(),
   "save-config": z.boolean(),
-  "webhook-url": z.string().url().optional(),
   config: z.string().optional(),
   debug: z.boolean(),
   help: z.boolean(),
@@ -70,7 +79,7 @@ log.setup({
     console: new log.handlers.ConsoleHandler("DEBUG", {
       formatter: (logRecord) => {
         const { datetime, levelName, msg } = logRecord;
-        return `${datetime.toISOString()} ${levelName.padEnd(7)} ${msg}`;
+        return `${iso8601(datetime)} ${levelName.padEnd(7)} ${msg}`;
       },
     }),
   },
@@ -93,44 +102,24 @@ function errExit(msg: string, options: ErrExitOption = {}) {
   options.showHelp && helpExit(exitCode) || Deno.exit(exitCode);
 }
 
-const configFilePath = args.config
+const configFileURL = args.config
   ? new URL(args.config, import.meta.url)
-  : new URL(
-    ".notify-discord.json",
-    `file://${Deno.env.get("HOME")}/`,
-  );
+  : cfg.DEFAULT_FILE_URL;
 
-args["save-config"] && await (async () => {
-  args["webhook-url"] || errExit("webhook-url is not set", { showHelp: true });
-  await Deno.writeTextFileSync(
-    configFilePath,
-    JSON.stringify(
-      {
-        "webhook-url": args["webhook-url"],
-      },
-      null,
-      "    ",
-    ),
-  );
-  log.info(`Successfully saved in ${configFilePath}`);
+const config = cfg.merge({
+  args: cfg.schema.parse(parseArgs(Deno.args)),
+  file: cfg.loadFromFile(configFileURL),
+});
+
+args["save-config"] && (() => {
+  cfg.saveAsFile(configFileURL, config);
   Deno.exit(0);
 })();
-
-function getwebhookUrlFromConfigFile(): string {
-  try {
-    log.debug(`loading config file: ${configFilePath}`);
-    const cfg = JSON.parse(Deno.readTextFileSync(configFilePath));
-    return cfg["webhook-url"];
-  } catch (e) {
-    log.debug(`failed to load config file: ${e.message}`);
-    return "";
-  }
-}
 
 async function execDiscordWebhook(content: string) {
   try {
     const webhookUrl = `${
-      args["webhook-url"] || await getwebhookUrlFromConfigFile() ||
+      config["webhook-url"] ||
       (() => {
         throw new Error("webhook URL is not configured");
       })()
@@ -142,9 +131,13 @@ async function execDiscordWebhook(content: string) {
 
     const formData = new FormData();
     formData.append("content", content);
+    config.username && formData.append("username", config.username);
+    config["avatar-url"] && formData.append("avatar_url", config["avatar-url"]);
 
     log.debug(`url: ${webhookUrl}`);
-    log.debug(`content: ${content}`);
+    log.debug(
+      `formData: ${JSON.stringify(Object.fromEntries(formData.entries()))}`,
+    );
 
     const res = await fetch(webhookUrl, {
       method: "POST",
@@ -159,24 +152,19 @@ async function execDiscordWebhook(content: string) {
     );
 
     const resBody = await res.json();
-    log.debug(`response body: ${resBody}`);
+    const resBodyStr = JSON.stringify(resBody);
+    log.debug(`response body: ${resBodyStr}`);
 
     res.ok ||
       errExit(
-        `notify failed: status=${res.status} ${res.statusText} message=${
-          JSON.stringify(resBody)
-        }`,
+        `notify failed: status=${res.status} ${res.statusText} message=${resBodyStr}`,
       );
 
-    switch (args.output) {
+    switch (config.output) {
       case "json":
         console.log(JSON.stringify(resBody, null, "  "));
         break;
-      case "text":
-        log.info(`notify done: ${res.statusText}`);
-        break;
       default:
-        log.warning(`output is not supported: ${args.output}`);
         log.info(`notify done: ${res.statusText}`);
         break;
     }
@@ -196,5 +184,5 @@ if (!Deno.isatty(Deno.stdin.rid)) {
 } else if (args._.length > 0) {
   execDiscordWebhook(args._.join(" "));
 } else {
-  errExit("no input from stdin or arguement", { showHelp: true });
+  errExit("No input from stdin or arguement", { showHelp: true });
 }

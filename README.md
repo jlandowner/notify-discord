@@ -1,21 +1,20 @@
-# notify-discord
+# notify-discord <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/653714c174fc6c8bbea73caf_636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" alt="image" height="30">
 
-notidy-discord - post webhook to discord webhook URL
+A CLI command to post messages to Discord channels created by Deno.
 
 # Quickstart
 
 1. Generate your webhook URL in Discord channel settings page.
    https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 
-2. Deno install
+2. Install with `deno install`
 
 ```sh
-deno install --allow-env --allow-write --allow-read --allow-net \
-  https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
-  -- --webhook-url https://discord.com/api/webhooks/YOUR/WEBHOOK_URL
+deno install --allow-env --allow-read --allow-write --allow-net --force https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
+  -- --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
-4. Post!
+3. Post!
 
 ```sh
 echo hello world | notify-discord
@@ -26,36 +25,46 @@ echo hello world | notify-discord
 ```sh
 $ ./notidy-discord --help
 
-notify-discord - post webhook to discord webhook URL
+notify-discord - post messages to Discord channel by webhook
 
 Usage:
-  Notify message from args:
-    ./notify-discord <message>
-  Notify message from stdin:
-    echo <message> | ./notify-discord
+  notify-discord <message>
+  echo <message> | notify-discord
 
 Options:
-  --output [text, json]        : Output format (default: text)
   --code-block <LANGUAGE>      : Enclose markdown code block with language (default: disabled)
-  --save-config                : store webhook configurations in file. If you build your custom binary with built-in URL, this does not work.
-  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL (default: use built-in URL if exist or use stored url in config)
-  --config <CONFIG_FILE_PATH>  : Config file path. If you build your custom binary with built-in URL, this does not work. (defualt: $HOME/.notify-discord.json)
+  --save-config                : Save config options in a config file
+  --config <CONFIG_FILE_PATH>  : Config file path (defualt: $HOME/.notify-discord.json)
   --debug                      : Debug mode (default: false)
   --help                       : Show help
   --version                    : Show version
 
+Config options:
+  --webhook-url <WEBHOOK_URL>  : Discord's webhook URL
+  --output      [text, json]   : Output format (default: text)
+  --username    <USERNAME>     : Override Discord's webhook username (default: configured in Discord webhook setting page)
+  --avatar-url  <AVATER_URL>   : Override Discord's webhook avator icon URL (default: configured in Discord webhook setting page)
+
+Configuration file:
+  You can save the config options in a config file to change the default behavior.
+    notify-discord --save-config --output json --username GitHub --avatar-url https://github.com/github.png
+  
+  When the config options are found in args and file, args values are used.
+
+  NOTE:
+    When you installed this command by "deno install" or "deno compile" with args of config options,
+    the options specified at install or compile time are ALWAYS used even if you pass no options in execution time.
+    If so, you can override the option by args but values in config file are never used.
+
 Example:
   1. post plain text message
-      ./notify-discord "Finished something"
+      echo "Finished something" | notify-discord
 
-  2. post plain text message with debug (set "--" between options and args)
-      ./notify-discord --debug -- "Finished something"
+  2. post json data as a json code block
+      cat something.json | notify-discord --code-block json
 
-  3. post json data
-      cat something.json | ./notify-discord --code-block json
-
-  4. post log with code block
-      cat something.log | ./notify-discord --code-block ""
+  3. post log as a plain code block
+      cat something.log | notify-discord --code-block ""
 ```
 
 # Install option
@@ -63,10 +72,13 @@ Example:
 ## 1. For deno-installed environment
 
 ```sh
-deno install --allow-env --allow-write --allow-read --allow-net \
+deno install --allow-env --allow-read --allow-write --allow-net --force \
   https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
-  -- --webhook-url https://discord.com/api/webhooks/YOUR/WEBHOOK_URL
+  -- --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
+
+> NOTE: You can pass the config options to `deno install` args next to `--`. See
+> [Usage](#usage) about the config options.
 
 ## 2. For non deno-installed environment
 
@@ -83,22 +95,38 @@ curl -sLO https://github.com/jlandowner/notify-discord/releases/latest/download/
 mv notify-discord $HOME/bin/
 
 # Create config file
-notify-discord --save-config --webhook-url --webhook-url https://discord.com/api/webhooks/YOUR/WEBHOOK_URL
+notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
-### 2-2. Build your binary with your Webhook URL.
+### 2-2. Build a binary with your Webhook URL.
 
-Once you build it, you can distribute a pre-configured binary to your servers or
-computers.
+Deno is required only in building environment.
 
-deno is only required in building environment.
+Once you build it, you can distribute a pre-configured command binary to your
+servers or computers.
 
 ```sh
 # Build with your webhook URL
-deno task build --webhook-url --webhook-url https://discord.com/api/webhooks/YOUR/WEBHOOK_URL
+deno compile --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
+  --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
 Then, a binary file named `notify-discord` is created and place it in your PATH.
+
+> NOTE: You can pass the config options at the end of `deno compile` args. See
+> [Usage](#usage) about the config options.
+
+# Support status of Discord Webhook API parameters
+
+https://discord.com/developers/docs/resources/webhook#execute-webhook
+
+- `content`
+- `username` and `avatar_url` overrides
+
+TODO:
+
+- `embed`
+- `attachments`
 
 # LICENSE
 
