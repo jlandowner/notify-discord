@@ -56,7 +56,7 @@ jobs:
       
       - name: Create Release
         run: |
-          gh create release ${GIT_TAG} --generate-notes --draft
+          gh release create ${GIT_TAG} --generate-notes --draft
           gh release upload ${GIT_TAG} dist/notify-discord-*.tgz
         env:
           GIT_TAG: v${{ github.event.inputs.semver }}
