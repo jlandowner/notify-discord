@@ -8,28 +8,22 @@ A CLI command to post messages to Discord channels made by Deno.
    channel.
    https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 
-2. Install with `deno`
+2. Install with
+   [`deno` CLI](https://docs.deno.com/runtime/manual/getting_started/installation)
 
 ```sh
 deno compile --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
   --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
+> You can see
+> [installation option for non-deno environment](#for-non-deno-environment)
+
 3. Post!
 
 ```sh
 echo hello world | ./notify-discord
 ```
-
-> For the quickstart, `deno` cli is required first.
->
-> ```sh
-> # Install deno: https://docs.deno.com/runtime/manual/getting_started/installation
-> curl -fsSL https://deno.land/install.sh | sh
-> ```
->
-> Or see
-> [installation option for non-deno environment](#for-non-deno-environment)
 
 # Usage
 
@@ -92,40 +86,7 @@ Example:
 
 # Installation options
 
-## 1. For deno-installed environment
-
-### 1-1. Build a binary with your Webhook URL
-
-```sh
-# Build with your webhook URL
-deno compile --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
-  --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
-
-# Move binary file to executable PATH (e.g. $HOME/bin)
-mv notify-discord $HOME/bin/
-```
-
-> NOTE: You can pass the options at the end of `deno compile` args to change
-> default behavior. Once you pass them at compile time, these options are
-> embeded in the command and initialization is not required.
->
-> e.g.
->
-> - --webhook-url <YOUR_WEBHOOK_URL> : configure webhook url embeded
-> - --config <YOUR_CONFIG_PATH> : change default config file path (default:
-  > $HOME/.notify-discord.json)
-
-### 1-2. Install with `deno install`
-
-```sh
-# Install
-deno install --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts
-
-# Initialize the command
-notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
-```
-
-## 2. For non-deno environment
+## For non-deno environment
 
 Download pre-built binary and initialize.
 
@@ -138,6 +99,39 @@ curl -sLO https://github.com/jlandowner/notify-discord/releases/latest/download/
 
 # Move binary file to executable PATH (e.g. $HOME/bin)
 mv notify-discord $HOME/bin/
+
+# Initialize the command
+notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
+```
+
+## For deno-installed environment
+
+### 1. Build a binary with your Webhook URL
+
+```sh
+# Build with your webhook URL
+deno compile --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
+  --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
+
+# Move binary file to executable PATH (e.g. $HOME/bin)
+mv notify-discord $HOME/bin/
+```
+
+You can pass the options at the end of `deno compile` args to change default
+behavior. Once you pass them at compile time, these options are embeded in the
+command and initialization is not required.
+
+> e.g.
+>
+> - --webhook-url <YOUR_WEBHOOK_URL> : configure webhook url embeded
+> - --config <YOUR_CONFIG_PATH> : change default config file path (default:
+  > $HOME/.notify-discord.json)
+
+### 2. Install with `deno install`
+
+```sh
+# Install
+deno install --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts
 
 # Initialize the command
 notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
