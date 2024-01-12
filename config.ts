@@ -37,6 +37,8 @@ interface MergeOptions {
 }
 
 export function merge(options: MergeOptions): Config {
+  log.debug(`config from args: ${options.args}`);
+  log.debug(`config from file: ${options.file}`);
   return schema.parse(
     {
       "webhook-url": pickConfigValue({
@@ -59,9 +61,14 @@ export function merge(options: MergeOptions): Config {
 }
 
 export function loadFromFile(fileURL: URL): Config {
-  const content = Deno.readTextFileSync(fileURL);
-  log.debug(`config file content: ${content}`);
-  return schema.parse(JSON.parse(content));
+  try {
+    const content = Deno.readTextFileSync(fileURL);
+    log.debug(`config file content: ${content}`);
+    return schema.parse(JSON.parse(content));
+  } catch (e) {
+    log.debug(`failed to load config file: ${e.message}`);
+    return {};
+  }
 }
 
 export function saveAsFile(fileURL: URL, config: Config) {
