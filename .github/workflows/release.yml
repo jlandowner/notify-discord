@@ -42,6 +42,10 @@ jobs:
           git add .
           git commit --author=. -m 'Auto Update by Release Action'
           git push
+      
+      - name: Build pre-built binaries
+        run: |
+          deno task build-all
 
       - name: Create tag
         run: |
@@ -49,10 +53,6 @@ jobs:
           git push origin ${GIT_TAG}
         env:
           GIT_TAG: v${{ github.event.inputs.semver }}
-      
-      - name: Build deno
-        run: |
-          deno task build-all
       
       - name: Create Release
         run: |
