@@ -21,6 +21,16 @@ deno compile --output notify-discord --allow-env --allow-read --allow-write --al
 echo hello world | ./notify-discord
 ```
 
+> For the quickstart, `deno` cli is required first.
+>
+> ```sh
+> # Install deno: https://docs.deno.com/runtime/manual/getting_started/installation
+> curl -fsSL https://deno.land/install.sh | sh
+> ```
+>
+> Or see
+> [installation option for non-deno environment](#for-non-deno-environment)
+
 # Usage
 
 ```sh
