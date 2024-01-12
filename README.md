@@ -25,6 +25,8 @@ deno compile --output notify-discord --allow-env --allow-read --allow-write --al
 echo hello world | ./notify-discord
 ```
 
+<img width="223" alt="s1" src="https://github.com/jlandowner/notify-discord/assets/48989258/f4d0e0a1-6346-4547-95c7-ba38d66b4aa8">
+
 # Usage
 
 ```sh
@@ -83,6 +85,32 @@ Example:
   5. post log as a plain code block
       tail /var/log/messages 2>&1 | notify-discord --code-block ""
 ```
+
+# Example
+
+### post plain text message
+
+```sh
+echo "Finished something" | notify-discord
+```
+
+<img width="271" alt="s2" src="https://github.com/jlandowner/notify-discord/assets/48989258/84cf20c3-2c9d-4615-a32c-218c96871681">
+
+### post text message and upload some file
+
+```sh
+date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
+```
+
+<img width="370" alt="s3" src="https://github.com/jlandowner/notify-discord/assets/48989258/0be47abb-dfd0-446c-b424-97e51e69b0e8">
+
+### post a command output as file named "long-run.log"
+
+```sh
+(for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file --file "long-run.log"
+```
+
+<img width="315" alt="s4" src="https://github.com/jlandowner/notify-discord/assets/48989258/4287f8af-24d9-4dc8-813a-4ec6f9c3c2fd">
 
 # Installation options
 
