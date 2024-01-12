@@ -84,21 +84,20 @@ Example:
 
 ## 1. For deno-installed environment
 
-Build a binary with your Webhook URL. Deno is required only in building
-environment.
+### 1-1. Build a binary with your Webhook URL
 
 ```sh
 # Build with your webhook URL
 deno compile --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts \
   --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
+
+# Move binary file to executable PATH (e.g. $HOME/bin)
+mv notify-discord $HOME/bin/
 ```
 
-Then, a binary file named `notify-discord` is created and place it in your
-executable `PATH`.
-
-> NOTE: You can pass the default options at the end of `deno compile` args. See
-> Once you pass them at install time, the options are embeded and
-> `--save-config` is not required.
+> NOTE: You can pass the options at the end of `deno compile` args to change
+> default behavior. Once you pass them at compile time, these options are
+> embeded in the command and initialization is not required.
 >
 > e.g.
 >
@@ -106,12 +105,22 @@ executable `PATH`.
 > - --config <YOUR_CONFIG_PATH> : change default config file path (default:
   > $HOME/.notify-discord.json)
 
-## 2. For non-deno environment
-
-Download pre-built binary and configure.
+### 1-2. Install with `deno install`
 
 ```sh
-# Choose and set variable of your environmet target
+# Install
+deno install --output notify-discord --allow-env --allow-read --allow-write --allow-net https://raw.githubusercontent.com/jlandowner/notify-discord/main/mod.ts
+
+# Initialize the command
+notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
+```
+
+## 2. For non-deno environment
+
+Download pre-built binary and initialize.
+
+```sh
+# Choose and set variable of your environment target
 TARGET=x86_64-unknown-linux-gnu # You can choose "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin"
 
 # Download pre-built binary
@@ -120,7 +129,7 @@ curl -sLO https://github.com/jlandowner/notify-discord/releases/latest/download/
 # Move binary file to executable PATH (e.g. $HOME/bin)
 mv notify-discord $HOME/bin/
 
-# Create config file
+# Initialize the command
 notify-discord --save-config --webhook-url https://discord.com/api/webhooks/YOUR_WEBHOOK_URL/SET_HERE
 ```
 
