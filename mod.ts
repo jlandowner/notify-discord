@@ -1,8 +1,8 @@
 import { parseArgs } from "https://deno.land/std@0.211.0/cli/parse_args.ts";
 import * as log from "https://deno.land/std@0.211.0/log/mod.ts";
-import { version } from "./version.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { boolean } from "https://deno.land/x/zod@v3.22.4/types.ts";
+import { version } from "./version.ts";
+import { builtInWebhookUrl } from "./url.ts";
 
 const VERSION_MESSAGE = `notify-discord - ${version} jlandowner 2024`;
 
@@ -121,14 +121,20 @@ args.init && await (async () => {
 })();
 
 function getwebhookUrlFromConfigFile(): string {
+  log.debug(`loading config file: ${configFilePath}`);
   const cfg = JSON.parse(Deno.readTextFileSync(configFilePath));
   return cfg["webhook-url"];
 }
 
 async function execDiscordWebhook(content: string) {
   try {
+    // webhook url priority
+    //   1. options
+    //   2. config file
+    //   3. builtin
     const webhookUrl = `${
-      args["webhook-url"] || await getwebhookUrlFromConfigFile()
+      args["webhook-url"] || await getwebhookUrlFromConfigFile() ||
+      builtInWebhookUrl
     }?wait=true`;
 
     if (args["code-block"] !== undefined) {

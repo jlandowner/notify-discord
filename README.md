@@ -64,9 +64,7 @@ Example:
       cat something.log | ./notify-discord --code-block ""
 ```
 
-# Develop
-
-## Build
+# Build
 
 ```sh
 deno task build
