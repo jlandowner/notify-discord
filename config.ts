@@ -37,8 +37,8 @@ interface MergeOptions {
 }
 
 export function merge(options: MergeOptions): Config {
-  log.debug(`config from args: ${options.args}`);
-  log.debug(`config from file: ${options.file}`);
+  log.debug(`config from args: ${JSON.stringify(options.args)}`);
+  log.debug(`config from file: ${JSON.stringify(options.file)}`);
   return schema.parse(
     {
       "webhook-url": pickConfigValue({
