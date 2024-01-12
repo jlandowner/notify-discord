@@ -1,6 +1,6 @@
 # notify-discord <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/653714c174fc6c8bbea73caf_636e0a69f118df70ad7828d4_icon_clyde_blurple_RGB.svg" alt="image" height="30">
 
-A CLI command to post messages to Discord channels created by Deno.
+A CLI command to post messages to Discord channels made by Deno.
 
 # Quickstart
 
