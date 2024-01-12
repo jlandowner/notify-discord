@@ -2,6 +2,7 @@ import { parseArgs } from "https://deno.land/std@0.211.0/cli/parse_args.ts";
 import * as log from "https://deno.land/std@0.211.0/log/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { version } from "./version.ts";
+
 const VERSION_MESSAGE = `notify-discord - ${version} jlandowner 2024`;
 
 const HELP_MESSAGE = `notify-discord - post webhook to discord webhook URL
