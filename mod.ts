@@ -205,7 +205,7 @@ async function execDiscordWebhook(content: string) {
       }
     }
   } catch (e) {
-    log.error(`failed to exec webhook: ${e.message}`);
+    errExit(`failed to exec webhook: ${e.message}`);
   }
 }
 
