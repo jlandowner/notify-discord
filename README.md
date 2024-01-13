@@ -76,7 +76,7 @@ Example:
   2. post text message and upload some file
       date > /tmp/date.log && echo "finished" | notify-discord --file /tmp/date.log
 
-  3. post a command output as file named "long-run.log"
+  3. post a command output as file
       (for i in $(seq 1 5); do echo $i; sleep 1; done) | notify-discord --as-file
 
   4. post json data as a json code block
